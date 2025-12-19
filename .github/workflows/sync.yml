@@ -1,0 +1,29 @@
+name: Sync Extension
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get repo info
+        id: repo
+        run: |
+          echo "slug=${GITHUB_REPOSITORY#*/}" >> $GITHUB_OUTPUT
+          echo "title=${GITHUB_REPOSITORY#*/}" >> $GITHUB_OUTPUT
+
+      - name: Sync to marketplace
+        run: |
+          curl -X POST "${{ secrets.API_URL }}/api/sync/extension" \
+            -H "Content-Type: application/json" \
+            -H "X-API-Key: ${{ secrets.SYNC_API_KEY }}" \
+            -d '{
+              "slug": "${{ steps.repo.outputs.slug }}",
+              "title": "${{ steps.repo.outputs.title }}",
+              "repo_url": "https://github.com/${{ github.repository }}"
+            }'
