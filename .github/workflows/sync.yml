@@ -2,13 +2,12 @@ name: Sync Extension
 
 on:
   push:
-    branches: [main, dev]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
   sync:
     runs-on: ubuntu-latest
-    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
     steps:
       - uses: actions/checkout@v4
 
