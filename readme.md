@@ -1,55 +1,103 @@
-# Extension Name
+# Extension Template
 
-## Описание
-Краткое описание что делает расширение.
+Шаблон для создания расширений Airnold Marketplace.
 
-## Зависимости
+## Структура
 
-### Python
 ```
-fastapi
-pydantic
-```
-
-### React
-```
-axios
+your-extension/
+├── backend/
+│   ├── example/
+│   │   └── index.py         # основная функция
+│   └── example-webhook/
+│       └── index.py         # webhook (опционально)
+├── frontend/
+│   ├── ExampleComponent.tsx
+│   └── useExample.ts
+└── readme.md                 # инструкция для ассистента
 ```
 
 ## Backend
 
-### Эндпоинты
-- `POST /api/example` — описание
+Каждая функция — папка с `index.py`.
 
-### Модели
-- `ExampleModel` — описание
+```python
+# backend/example/index.py
+import os
+import json
+
+def handler(event: dict, context) -> dict:
+    """Описание функции"""
+
+    api_key = os.environ.get('EXAMPLE_API_KEY')
+
+    return {
+        'statusCode': 200,
+        'headers': {'Content-Type': 'application/json'},
+        'body': json.dumps({'status': 'ok'})
+    }
+```
+
+**Правила:**
+- Python 3.11
+- Точка входа: `handler(event, context)` в `index.py`
+- Секреты через `os.environ`
+- Типизация обязательна
 
 ## Frontend
 
-### Компоненты
-- `ExampleComponent` — описание
+React 18 компоненты и хуки.
 
-### Хуки
-- `useExample` — описание
+```tsx
+// frontend/ExampleComponent.tsx
+interface Props {
+  onSuccess: () => void;
+}
 
-## Интеграция
-
-### 1. Backend
-1. Скопировать файлы из `backend/` в `app/src/api/v1/routers/`
-2. Добавить роутер в `app.py`
-3. Запустить миграцию если есть
-
-### 2. Frontend
-1. Скопировать компоненты из `frontend/` в `app/components/`
-2. Добавить импорты где нужно
-
-### 3. Переменные окружения
-```env
-EXAMPLE_API_KEY=xxx
+export function ExampleComponent({ onSuccess }: Props) {
+  return <button onClick={onSuccess}>Нажми</button>;
+}
 ```
 
-## Конфигурация
+## readme.md — Инструкция для ассистента
 
-| Переменная | Описание | Обязательно |
-|------------|----------|-------------|
-| `EXAMPLE_API_KEY` | API ключ для сервиса | Да |
+Ассистент читает этот файл и интегрирует расширение в проект.
+
+**Обязательные секции:**
+
+### Секреты
+Какие переменные окружения нужны.
+
+### База данных
+SQL для создания таблиц (если нужны).
+
+### Backend
+Что делает каждая функция, какие параметры принимает.
+
+### Frontend
+Как использовать компоненты, какие пропсы.
+
+### Пример использования
+Код интеграции в проект.
+
+---
+
+Пример готового расширения: [robokassa](https://github.com/pro-marketplace/robokassa)
+
+## Как работает установка
+
+1. Пользователь нажимает "Добавить" в маркетплейсе
+2. `backend/*` копируется в проект
+3. `frontend/*` копируется в проект
+4. Ассистент получает `readme.md` и:
+   - Просит добавить секреты
+   - Создаёт таблицы в БД
+   - Подключает компоненты где нужно
+
+## Чеклист
+
+- [ ] Backend функции в папках с `index.py`
+- [ ] Frontend компоненты экспортируются
+- [ ] readme.md описывает: секреты, БД, API, компоненты
+- [ ] Нет захардкоженных ключей
+- [ ] Протестировано
