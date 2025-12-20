@@ -2,102 +2,206 @@
 
 Шаблон для создания расширений Airnold Marketplace.
 
-## Структура
+## Структура репозитория
 
 ```
 your-extension/
 ├── backend/
 │   ├── example/
-│   │   └── index.py         # основная функция
+│   │   └── index.py
 │   └── example-webhook/
-│       └── index.py         # webhook (опционально)
+│       └── index.py
 ├── frontend/
 │   ├── ExampleComponent.tsx
 │   └── useExample.ts
-└── readme.md                 # инструкция для ассистента
+└── readme.md
 ```
 
-## Backend
+## Как писать readme.md
 
-Каждая функция — папка с `index.py`.
+Ассистент читает `readme.md` и интегрирует расширение в проект.
 
-```python
-# backend/example/index.py
-import os
-import json
-
-def handler(event: dict, context) -> dict:
-    """Описание функции"""
-
-    api_key = os.environ.get('EXAMPLE_API_KEY')
-
-    return {
-        'statusCode': 200,
-        'headers': {'Content-Type': 'application/json'},
-        'body': json.dumps({'status': 'ok'})
-    }
-```
-
-**Правила:**
-- Python 3.11
-- Точка входа: `handler(event, context)` в `index.py`
-- Секреты через `os.environ`
-- Типизация обязательна
-
-## Frontend
-
-React 18 компоненты и хуки.
-
-```tsx
-// frontend/ExampleComponent.tsx
-interface Props {
-  onSuccess: () => void;
-}
-
-export function ExampleComponent({ onSuccess }: Props) {
-  return <button onClick={onSuccess}>Нажми</button>;
-}
-```
-
-## readme.md — Инструкция для ассистента
-
-Ассистент читает этот файл и интегрирует расширение в проект.
-
-**Обязательные секции:**
-
-### Секреты
-Какие переменные окружения нужны.
-
-### База данных
-SQL для создания таблиц (если нужны).
-
-### Backend
-Что делает каждая функция, какие параметры принимает.
-
-### Frontend
-Как использовать компоненты, какие пропсы.
-
-### Пример использования
-Код интеграции в проект.
+**README должен описывать 5 модальностей:**
 
 ---
 
-Пример готового расширения: [robokassa](https://github.com/pro-marketplace/robokassa)
+### 1. База данных
+
+Какие таблицы нужно создать.
+
+```markdown
+## База данных
+
+### Таблица orders
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | SERIAL PRIMARY KEY | ID заказа |
+| email | TEXT | Email клиента |
+| amount | INTEGER | Сумма в копейках |
+| status | TEXT | pending / paid / failed |
+
+SQL:
+```sql
+CREATE TABLE orders (
+  id SERIAL PRIMARY KEY,
+  email TEXT NOT NULL,
+  amount INTEGER NOT NULL,
+  status TEXT DEFAULT 'pending',
+  created_at TIMESTAMP DEFAULT NOW()
+);
+```
+```
+
+---
+
+### 2. Облачные функции
+
+Какие функции есть, что делают, какие параметры.
+
+```markdown
+## Облачные функции
+
+### example/
+Создаёт что-то и возвращает результат.
+
+**Метод:** POST
+
+**Параметры:**
+```json
+{
+  "email": "user@example.com",
+  "amount": 1000
+}
+```
+
+**Ответ:**
+```json
+{
+  "id": 123,
+  "url": "https://..."
+}
+```
+
+### example-webhook/
+Принимает уведомления от внешнего сервиса.
+
+**Метод:** POST
+**Вызывается:** автоматически внешним сервисом
+```
+
+---
+
+### 3. Секреты
+
+Какие переменные окружения нужны.
+
+```markdown
+## Секреты
+
+| Переменная | Описание | Где взять |
+|------------|----------|-----------|
+| EXAMPLE_API_KEY | API ключ сервиса | Личный кабинет example.com |
+| EXAMPLE_SECRET | Секретный ключ для подписей | Настройки → API |
+```
+
+---
+
+### 4. S3 хранилище
+
+Если расширение работает с файлами.
+
+```markdown
+## S3 хранилище
+
+Расширение сохраняет файлы в S3:
+- `uploads/` — загруженные пользователем файлы
+- `generated/` — сгенерированные файлы
+
+Доступ через CDN: `https://cdn.poehali.dev/projects/{id}/bucket/...`
+```
+
+---
+
+### 5. Рекурентные задачи
+
+Если нужны периодические задачи.
+
+```markdown
+## Рекурентные задачи
+
+| Функция | Расписание | Описание |
+|---------|------------|----------|
+| example-cleanup/ | Каждый день в 03:00 | Удаляет старые записи |
+| example-sync/ | Каждый час | Синхронизирует данные |
+```
+
+---
+
+## Frontend компоненты
+
+Описание компонентов и как их использовать.
+
+```markdown
+## Frontend
+
+### ExampleComponent
+Кнопка для запуска действия.
+
+**Пропсы:**
+| Проп | Тип | Описание |
+|------|-----|----------|
+| onSuccess | () => void | Колбэк при успехе |
+| onError | (error: Error) => void | Колбэк при ошибке |
+
+**Пример:**
+```tsx
+import { ExampleComponent } from './components/ExampleComponent';
+
+<ExampleComponent
+  onSuccess={() => alert('Готово!')}
+  onError={(e) => console.error(e)}
+/>
+```
+
+### useExample
+Хук для работы с API.
+
+```tsx
+const { sendRequest, loading, error } = useExample();
+await sendRequest({ message: 'test' });
+```
+```
+
+---
+
+## Полный пример readme.md
+
+Смотри [robokassa](https://github.com/pro-marketplace/robokassa) — реальное расширение с описанием всех модальностей.
+
+---
 
 ## Как работает установка
 
-1. Пользователь нажимает "Добавить" в маркетплейсе
+1. Пользователь нажимает "Добавить"
 2. `backend/*` копируется в проект
 3. `frontend/*` копируется в проект
 4. Ассистент получает `readme.md` и:
-   - Просит добавить секреты
    - Создаёт таблицы в БД
-   - Подключает компоненты где нужно
+   - Просит добавить секреты
+   - Подключает функции
+   - Настраивает S3 если нужно
+   - Создаёт cron задачи
+   - Интегрирует компоненты
 
 ## Чеклист
 
 - [ ] Backend функции в папках с `index.py`
 - [ ] Frontend компоненты экспортируются
-- [ ] readme.md описывает: секреты, БД, API, компоненты
+- [ ] readme.md описывает все используемые модальности:
+  - [ ] База данных (если есть)
+  - [ ] Облачные функции
+  - [ ] Секреты
+  - [ ] S3 хранилище (если есть)
+  - [ ] Рекурентные задачи (если есть)
 - [ ] Нет захардкоженных ключей
 - [ ] Протестировано
