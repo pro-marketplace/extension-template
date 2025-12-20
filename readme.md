@@ -9,15 +9,14 @@ your-extension/
 ├── backend/
 │   ├── example/
 │   │   ├── index.py
-│   │   └── requirements.txt
+│   │   └── requirements.txt    # зависимости функции
 │   └── example-webhook/
 │       ├── index.py
 │       └── requirements.txt
 ├── frontend/
 │   ├── ExampleComponent.tsx
 │   └── useExample.ts
-├── package.json              # зависимости frontend
-└── readme.md
+└── readme.md                   # зависимости frontend указать тут
 ```
 
 ## Как писать readme.md
@@ -30,24 +29,24 @@ README должен описывать **5 модальностей:**
 
 ## 1. Зависимости
 
-Какие пакеты нужны для работы расширения.
-
-**Backend (Python)** — указать в `requirements.txt` каждой функции:
+**Backend (Python)** — файл `requirements.txt` в папке каждой функции:
 
 ```
 pydantic>=2.0.0
 requests>=2.28.0
 ```
 
-**Frontend (npm)** — указать в `package.json` или в README:
+Деплоится автоматически вместе с функцией.
 
-```json
-{
-  "dependencies": {
-    "axios": "^1.6.0"
-  }
-}
+**Frontend (npm)** — указать в README, ассистент установит сам:
+
 ```
+npm install axios
+```
+
+Или списком:
+- `axios` — HTTP клиент
+- `date-fns` — работа с датами
 
 ---
 
@@ -178,11 +177,10 @@ import { ExampleComponent } from './components/ExampleComponent';
 ## Чеклист
 
 - [ ] Backend функции в папках с `index.py`
-- [ ] `requirements.txt` в каждой функции
+- [ ] `requirements.txt` в каждой функции (Python зависимости)
 - [ ] Frontend компоненты экспортируются
-- [ ] `package.json` с зависимостями (если есть)
 - [ ] readme.md описывает:
-  - [ ] Зависимости (backend + frontend)
+  - [ ] npm зависимости (если есть)
   - [ ] База данных (если есть)
   - [ ] Облачные функции
   - [ ] Секреты
